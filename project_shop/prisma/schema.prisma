@@ -1,0 +1,94 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+enum Role{
+  ADMIN
+  USER
+  SHOP
+}
+
+model User{
+  id Int @id @default(autoincrement())
+  email String
+  password String
+  firstName String
+  lastName String
+  avatar String
+  role Role @default(USER)
+  isActive Boolean @default(true)
+  product Product[]
+  wishlish Wishlish[]
+  createdAt DateTime @default(now()) 
+  updateAt DateTime @updatedAt
+  @@map("users")
+}
+
+model Categroy{
+  id     Int @id @default(autoincrement())
+  name String
+  icon String
+  status Boolean @default(true)
+  products Product[]
+  @@map("categories")
+}
+
+model Product{
+  id Int @id @default(autoincrement())
+  name String
+  longDescription String
+  shortDescription String
+  quantity Int
+  main_image String
+  category Categroy @relation(fields: [categoryid],references: [id])
+  categoryid Int
+  shop User? @relation(fields: [shopId],references: [id])
+  shopId Int?
+  prodcutimages ProductImages[]
+  productvarient ProductVarient[]
+  wishlish Wishlish[]
+  createdAt DateTime @default(now()) 
+  updateAt DateTime @updatedAt
+  @@map("product")
+}
+
+model ProductImages{
+  id Int @id @default(autoincrement())
+  images String
+  product Product @relation(fields: [productId],references: [id],onDelete: Cascade)
+  productId Int
+}
+
+model ProductVarient{
+    id Int @id @default(autoincrement())
+    name String
+    product Product @relation(fields: [productId],references: [id],onDelete: Cascade)
+    productId Int
+    productvarientitem  ProductVarientItem[]
+}
+
+model ProductVarientItem{
+    id Int @id @default(autoincrement())
+    name String
+    ProductVarient ProductVarient @relation(fields: [productvarientid],references: [id],onDelete: Cascade)
+    productvarientid Int
+}
+
+model Wishlish{
+  userId Int
+  productId Int
+
+  user User @relation(fields: [userId],references: [id],onDelete: Cascade)
+  product Product @relation(fields: [productId],references: [id],onDelete: Cascade)
+  @@id([userId,productId])
+}
